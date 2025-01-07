@@ -10,7 +10,7 @@
           :class="{ 'todo__sidebar--list--item--selected': todo.id === selectedTodoId }") {{ `${todo.id}. ${todo.title}` }}
       .todo__sidebar--add.flex.content-center
         button(@click="addTodoItem") {{ "Add Item" }}
-    .todo__sidebar--downer.content-center
+    .todo__sidebar--downer.content-center(@click="toggleRandomImage")
       img(:src="randomImageUrl" alt="random image" v-if="randomImageUrl")
       
   .hambuger__icon(@click="toggleSidebar" v-if="!isSidebarVisible")
@@ -27,6 +27,7 @@ import { ref } from 'vue'
 import type { TodoItem } from '@renderer/interfaces/todo'
 import ItemForm from '@renderer/components/ItemForm.vue'
 import { getRandomImage } from '@renderer/api/api'
+import Swal from 'sweetalert2'
 import { onMounted } from 'vue'
 const selectedTodoId = ref<number | null>(null)
 const isSidebarVisible = ref<boolean>(false)
@@ -35,6 +36,14 @@ const selectTodo = (id: number) => {
 }
 const randomImageUrl = ref<string | null>(null)
 const addTodoItem = () => {
+  if (todoList.value.length === 10) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'You can only add up to 10 items!'
+    })
+    return
+  }
   const newId = todoList.value.length + 1
   todoList.value.push({
     id: newId,
@@ -47,13 +56,22 @@ const addTodoItem = () => {
   selectedTodoId.value = newId
 }
 const sidebarRef = ref<HTMLElement | null>(null)
+const isFetching = ref(false)
 const toggleSidebar = () => {
   isSidebarVisible.value = !isSidebarVisible.value
 }
-const getRandom = async () => {
-  const data = await getRandomImage()
-  console.log(data[0].url)
-  return data[0].url
+const toggleRandomImage = async () => {
+  if (isFetching.value) return
+  isFetching.value = true
+  randomImageUrl.value = 'https://cdn.pixabay.com/animation/2024/11/20/14/47/14-47-08-827_512.gif'
+  try {
+    const data = await getRandomImage()
+    randomImageUrl.value = data[0].url
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isFetching.value = false
+  }
 }
 const todoList = ref<TodoItem[]>([
   {

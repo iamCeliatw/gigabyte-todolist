@@ -3,7 +3,7 @@ let BACKEND_URL =
   'https://api.thedogapi.com/v1/images/search?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=0&limit=1'
 
 let API_KEY = import.meta.env.VITE_API_KEY
-
+let IMGUR_CLIENT_ID = import.meta.env.VITE_IMGUR_CLIENT_ID
 export function getRandomImage() {
   return service({
     url: BACKEND_URL,
@@ -14,6 +14,16 @@ export function getRandomImage() {
     }
   })
 }
-// curl --location 'https://api.thedogapi.com/v1/images/search?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=0&limit=1' \
-// --header 'Content-Type: application/json' \
-// --header 'x-api-key: YOUR-API-KEY'
+export function postImage(image: FormData) {
+  return service({
+    url: 'https://api.imgur.com/3/image',
+    method: 'POST',
+    data: {
+      image: image,
+      type: 'base64'
+    },
+    headers: {
+      Authorization: `Client-ID ${IMGUR_CLIENT_ID}` // 這裡填入你的 Imgur Client ID
+    }
+  })
+}

@@ -35,8 +35,10 @@
     "qrcode": "^1.5.4",
     "simple-keyboard": "^3.7.83",
     "simple-keyboard-layouts": "^3.3.108",
+    "sweetalert2": "^11.15.10",
     "vite-plugin-static-copy": "^2.0.0",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue-sweetalert2": "^5.0.11"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",

@@ -2,4 +2,5 @@ import './assets/main.sass'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-createApp(App).use(router).mount('#app')
+import VueSweetalert2 from 'vue-sweetalert2'
+createApp(App).use(router).use(VueSweetalert2).mount('#app')
