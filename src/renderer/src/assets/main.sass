@@ -1,5 +1,32 @@
+@import './variable'
+
 * 
   margin: 0
   padding: 0
   box-sizing: border-box
-  
+
+body
+  width: 100%
+  height: 100%
+
+
+.flex
+  display: flex
+
+.content-center
+  justify-content: center
+  align-items: center
+
+.flex-column
+  flex-direction: column
+
+.button
+  transition: all 0.3s ease
+  color: $text-color
+  // background: $light-green-color
+  &:hover
+    color: $text-color
+    background: $secondary-color
+  &:active
+    color: $gray-color
+    background: $light-green-color

@@ -1,32 +1,29 @@
 import service from './axios'
-let BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+let BACKEND_URL =
+  'https://api.thedogapi.com/v1/images/search?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=0&limit=1'
 
-console.log(import.meta.env.VITE_BACKEND_URL, 'window.location.origin🦊')
-
-export function postImage(file: string, token: string) {
+let API_KEY = import.meta.env.VITE_API_KEY
+let IMGUR_CLIENT_ID = import.meta.env.VITE_IMGUR_CLIENT_ID
+export function getRandomImage() {
   return service({
-    url: `${BACKEND_URL}/api/upload`,
-    method: 'post',
-    data: {
-      file: file,
-      token: token
+    url: BACKEND_URL,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY
     }
   })
 }
-
-export function getMusicData() {
+export function postImage(image: FormData) {
   return service({
-    url: `${BACKEND_URL}/api/music/urped4vydv`,
-    method: 'get'
-  })
-}
-
-export function agreeShare(status: string) {
-  return service({
-    url: `${BACKEND_URL}/api/agree`,
-    method: 'post',
+    url: 'https://api.imgur.com/3/image',
+    method: 'POST',
     data: {
-      status: status
+      image: image,
+      type: 'base64'
+    },
+    headers: {
+      Authorization: `Client-ID ${IMGUR_CLIENT_ID}` // 這裡填入你的 Imgur Client ID
     }
   })
 }
