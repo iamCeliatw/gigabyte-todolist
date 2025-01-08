@@ -44,7 +44,6 @@
 import type { TodoItem } from '@renderer/interfaces/todo'
 import { ref, watch } from 'vue'
 import Swal from 'sweetalert2'
-import { postImage } from '@renderer/api/api'
 const props = defineProps<{ item: TodoItem | null }>()
 const emits = defineEmits<{
   (e: 'updateItem', updatedData: Partial<TodoItem>): void
@@ -212,7 +211,7 @@ watch(
 </script>
 
 <style lang="sass" scoped>
-@import '../assets/variable'
+@use '../assets/variable' as var
 .form__container
   width: 100%
   max-width: calc(100% - 250px)
@@ -223,6 +222,7 @@ watch(
     max-width: 100%
     margin-left: 0
     padding: 66px 15px 15px
+
   .top__row,
   .image__row,
   .content__row,
@@ -238,6 +238,7 @@ watch(
     @media screen and (max-width: 768px)
       flex-wrap: wrap
 
+
   .form-label
     display: block
     font-weight: bold
@@ -245,6 +246,8 @@ watch(
     width: 100%
   .image
     padding-left: 1rem
+    @media screen and (max-width: 768px)
+      padding: 0
 
 
   .left-column,
@@ -253,6 +256,9 @@ watch(
     @media (min-width: 768px)
       width: 50%
       padding: 0 1rem
+    @media (max-width: 768px)
+      margin-top: 1rem
+
 
   .date-range
     display: flex
@@ -267,15 +273,15 @@ watch(
     font-size: 1rem
     height: 51px
     padding: 0.4rem 0.6rem
-    background: $gray-color
+    background: var.$gray-color
     border-radius: 4px
     border: none
     &:focus
       outline: none
 
   .date-input
-    background: $gray-color
-    color: $text-color
+    background: var.$gray-color
+    color: var.$text-color
     border: none
 
   .image-upload-box
@@ -286,31 +292,32 @@ watch(
     width: 100%
     justify-content: space-between
     padding-left: 1rem
-    @media (min-width: 768px)
-      width: 50%
+    @media (max-width: 768px)
+      width: 100%
+      padding: 0
 
 
     .or
       text-align: center
-      color: $text-color
+      color: var.$text-color
 
 
     .upload-btn
       height: 51px
       transition: all 0.3s ease
-      color: $text-color
-      background: $light-green-color
+      color: var.$text-color
+      background: var.$light-green-color
       border: none
       border-radius: 4px
       cursor: pointer
       padding: 0.4rem 1rem
       transition: all 0.3s
       &:hover
-        color: $text-color
-        background: $secondary-color
+        color: var.$text-color
+        background: var.$secondary-color
       &:active
-        color: $gray-color
-        background: $light-green-color
+        color: var.$gray-color
+        background: var.$light-green-color
     .url-input
       height: 51px
 
@@ -320,30 +327,34 @@ watch(
     height: 151px
     border-radius: 10px
 
-    @media (min-width: 768px)
-      width: 50%
+    @media (max-width: 768px)
+      width: 100%
 
     img
       border-radius: 10px
       object-position: center
       width: calc(100% - 1rem)
-
+      @media (max-width: 768px)
+        width: 100%
     .no-img
       width: calc(100% - 1rem)
-      background: $gray-color
+      background: var.$gray-color
       height: 100%
       border-radius: 10px
-
+      @media (max-width: 768px)
+        width: 100%
   .content__row
     flex-direction: column
     padding: 0 1rem
     position: relative
+    @media (max-width: 768px)
+      padding: 0
 
     textarea.content-textarea
       min-height: 100px
       resize: vertical
       border-radius: 10px
-      background: $gray-color
+      background: var.$gray-color
       border: none
       resize: none
 
@@ -357,11 +368,11 @@ watch(
       bottom: 0rem
       width: 83px
       height: 30px
-      background-color: $light-green-color
+      background-color: var.$light-green-color
       clip-path: polygon(35% 0, 100% 0, 100% 100%, 0% 100%)
       border-radius: 0 0 10px 0
       p
-        color: $text-color
+        color: var.$text-color
         font-size: 0.8rem
         padding: 0.2rem 0.5rem
         font-weight: bold

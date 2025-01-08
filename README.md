@@ -1,4 +1,4 @@
-# vyin-ai
+# gigabyte-todolist
 
 An Electron application with Vue and TypeScript
 

@@ -4,6 +4,7 @@ let BACKEND_URL =
 
 let API_KEY = import.meta.env.VITE_API_KEY
 let IMGUR_CLIENT_ID = import.meta.env.VITE_IMGUR_CLIENT_ID
+
 export function getRandomImage() {
   return service({
     url: BACKEND_URL,
@@ -11,19 +12,6 @@ export function getRandomImage() {
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': API_KEY
-    }
-  })
-}
-export function postImage(image: FormData) {
-  return service({
-    url: 'https://api.imgur.com/3/image',
-    method: 'POST',
-    data: {
-      image: image,
-      type: 'base64'
-    },
-    headers: {
-      Authorization: `Client-ID ${IMGUR_CLIENT_ID}` // 這裡填入你的 Imgur Client ID
     }
   })
 }
