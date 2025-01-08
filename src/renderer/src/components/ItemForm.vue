@@ -1,7 +1,6 @@
 <template lang="pug">
 .form__container
-  // 標題與日期區
-  .top-row
+  .top__row
     .left-column
       label.form-label {{ "Title" }}
       input.form-input(type="text" v-model="localFormData.title" placeholder="new item title")
@@ -13,34 +12,32 @@
         span {{ "~" }}
         input.date-input(type="date" v-model="localFormData.endDate")
 
-  // 圖片區
-  .image-row
+  .image__row
     label.form-label.image {{ "Image" }}
     .image__container
       .image-upload-box
         button.upload-btn(type="button" @click="handleFileClick") {{ "Upload Image" }}
         p.or {{ "or" }}
-        input.url-input(type="text" v-model="localFormData.imageUrl" placeholder="Please enter image URL" @blur="onImageUrlBlur")
-
+        input.url-input(type="text" v-model="inputUrl" placeholder="Please enter image URL")
         input.file-input(type="file" ref="fileInputRef" accept="image/*" style="display: none" @change="onFileChange")
 
       .image-preview
-        img.show-img(v-if="localFormData.imageUrl" :src="localFormData.imageUrl" alt="Preview" @error="handleImageError")
+        img.show-img.image(v-if="localFormData.imageUrl" :src="localFormData.imageUrl" alt="Preview" @error="handleImageError")
         .no-img(v-if="!localFormData.imageUrl") 
 
-  // 內容區
-  .content-row
+  .content__row
     label.form-label {{ "Content" }}
     textarea.content-textarea(
       v-model="localFormData.content"
-      maxlength="200"
       @input="onContentInput"
       placeholder="content..."
       
     )
-    .count-display.flex.content-center
-      p 200/{{ contentCount }}
+    .count-display.flex.item-center.content-end 
+      p {{ `200/${contentCount}` }}
 
+  .delete-btn(@click="deleteItem")
+    img.delete-img(src="/delete-icon.svg" alt="delete")
 </template>
 
 <script lang="ts" setup>
@@ -51,9 +48,13 @@ import { postImage } from '@renderer/api/api'
 const props = defineProps<{ item: TodoItem | null }>()
 const emits = defineEmits<{
   (e: 'updateItem', updatedData: Partial<TodoItem>): void
+  (e: 'deleteItem', id: number): void
 }>()
 
-const contentCount = ref(0)
+const isChecking = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const contentCount = ref<number>(0)
+const inputUrl = ref<string>('')
 const localFormData = ref<TodoItem>({
   id: 0,
   title: '',
@@ -62,12 +63,51 @@ const localFormData = ref<TodoItem>({
   imageUrl: '',
   content: ''
 })
+const fieldsToWatch: (keyof TodoItem)[] = ['title', 'content', 'startDate', 'endDate', 'imageUrl']
+
+const deleteItem = () => {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You will not be able to recover this item!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'No, keep it',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire('Deleted!', 'Your item has been deleted.', 'success')
+      if (props.item?.id !== undefined) {
+        emits('deleteItem', props.item.id)
+      }
+    }
+  })
+}
+
+watch(inputUrl, (newVal) => {
+  if (!newVal) return
+  localFormData.value.imageUrl = newVal
+})
+
+// watch input change function
 const createFieldWatch = (field: keyof TodoItem) => {
   watch(
     () => localFormData.value[field],
     (newVal) => {
       if (field === 'startDate' || field === 'endDate') {
         if (!isChecking.value) checkField(field)
+      }
+      if (field === 'content' && typeof newVal === 'string') {
+        if (newVal.length > 200) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Oops...',
+            text: 'Content should be less than 200 characters!'
+          })
+          localFormData.value.content = newVal.slice(0, 200)
+        }
+        contentCount.value = newVal.length
       }
       if (props.item && newVal !== props.item[field]) {
         emits('updateItem', {
@@ -78,8 +118,7 @@ const createFieldWatch = (field: keyof TodoItem) => {
     }
   )
 }
-const isChecking = ref(false)
-const fileInputRef = ref<HTMLInputElement | null>(null)
+fieldsToWatch.forEach(createFieldWatch)
 
 const handleFileClick = () => {
   fileInputRef.value?.click()
@@ -95,14 +134,13 @@ const onFileChange = (event: Event) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     const previewImage = e.target?.result as string
-    console.log(previewImage)
     localFormData.value.imageUrl = previewImage
+    inputUrl.value = ''
   }
   reader.readAsDataURL(file)
 }
 
 const checkField = (field: keyof TodoItem) => {
-  console.log('!', field)
   if (isChecking.value) {
     return
   }
@@ -123,8 +161,6 @@ const checkField = (field: keyof TodoItem) => {
               title: 'Oops...Input Error',
               text: 'start date should be less than end date'
             })
-            localFormData.value.startDate = ''
-            console.log('isChecking.value', isChecking.value)
             return
           }
         }
@@ -143,7 +179,6 @@ const checkField = (field: keyof TodoItem) => {
               title: 'Oops...Input Error',
               text: 'End date should be greater than start date'
             })
-            localFormData.value.endDate = ''
             return
           }
         }
@@ -154,15 +189,16 @@ const checkField = (field: keyof TodoItem) => {
   }
 }
 const handleImageError = (event: Event) => {
+  Swal.fire({
+    icon: 'error',
+    title: 'Invalid URL',
+    text: 'Please enter a valid image URL.'
+  })
+  inputUrl.value = ''
   const target = event.target as HTMLImageElement
   target.src =
     'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGNkZzdpajhleTI0YzRtNGFhYmY5d2IxZWV4eXRtc3h1eDl4NmhrayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TqiwHbFBaZ4ti/giphy.webp'
 }
-// 定義需要監聽的欄位
-const fieldsToWatch: (keyof TodoItem)[] = ['title', 'content', 'startDate', 'endDate', 'imageUrl']
-
-// 為每個欄位創建 watch
-fieldsToWatch.forEach(createFieldWatch)
 
 watch(
   () => props.item,
@@ -187,9 +223,9 @@ watch(
     max-width: 100%
     margin-left: 0
     padding: 66px 15px 15px
-  .top-row,
-  .image-row,
-  .content-row,
+  .top__row,
+  .image__row,
+  .content__row,
   .actions
     margin-bottom: 1rem
     display: flex
@@ -217,15 +253,11 @@ watch(
     @media (min-width: 768px)
       width: 50%
       padding: 0 1rem
-      box-sizing: border-box
-
-
 
   .date-range
     display: flex
     align-items: center
     gap: 0.5rem
-
 
   .form-input,
   .date-input,
@@ -235,10 +267,16 @@ watch(
     font-size: 1rem
     height: 51px
     padding: 0.4rem 0.6rem
-    border: 1px solid #ccc
+    background: $gray-color
     border-radius: 4px
-    box-sizing: border-box
+    border: none
+    &:focus
+      outline: none
 
+  .date-input
+    background: $gray-color
+    color: $text-color
+    border: none
 
   .image-upload-box
     display: flex
@@ -254,7 +292,7 @@ watch(
 
     .or
       text-align: center
-      color: #888
+      color: $text-color
 
 
     .upload-btn
@@ -286,21 +324,17 @@ watch(
       width: 50%
 
     img
-      width: 100%
-      height: 100%
-      display: block
-      object-fit: cover
       border-radius: 10px
       object-position: center
+      width: calc(100% - 1rem)
+
     .no-img
       width: calc(100% - 1rem)
       background: $gray-color
       height: 100%
       border-radius: 10px
 
-
-
-  .content-row
+  .content__row
     flex-direction: column
     padding: 0 1rem
     position: relative
@@ -321,15 +355,24 @@ watch(
       position: absolute
       right: 1rem
       bottom: 0rem
-      width: 80px
+      width: 83px
       height: 30px
       background-color: $light-green-color
-      clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%)
+      clip-path: polygon(35% 0, 100% 0, 100% 100%, 0% 100%)
       border-radius: 0 0 10px 0
-
       p
         color: $text-color
         font-size: 0.8rem
         padding: 0.2rem 0.5rem
         font-weight: bold
+.delete-btn
+  position: absolute
+  top: 23px
+  right: 17px
+  width: 24px
+  height: auto
+  cursor: pointer
+  img
+    width: 100%
+    height: 100%
 </style>

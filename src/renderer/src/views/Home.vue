@@ -9,16 +9,17 @@
           li.todo__sidebar--list--item(v-for="todo in todoList" :key="todo.id" @click="selectTodo(todo.id)" 
           :class="{ 'todo__sidebar--list--item--selected': todo.id === selectedTodoId }") {{ `${todo.id}. ${todo.title}` }}
       .todo__sidebar--add.flex.content-center
-        button(@click="addTodoItem") {{ "Add Item" }}
-    .todo__sidebar--downer.content-center(@click="toggleRandomImage")
-      img(:src="randomImageUrl" alt="random image" v-if="randomImageUrl")
+        button.radius-10(@click="addTodoItem") {{ "Add Item" }}
+    .todo__sidebar--downer.content-center.radius-10(@click="toggleRandomImage")
+      img.image.radius-10(:src="randomImageUrl" alt="random image" v-if="randomImageUrl")
       
   .hambuger__icon(@click="toggleSidebar" v-if="!isSidebarVisible")
     span
     span
     span
+
   ItemForm(:item="todoList.find(todo => todo.id === selectedTodoId)" v-if="selectedTodoId !== null"
-  @updateItem="handleUpdate")
+  @updateItem="handleUpdate" @deleteItem="handleDelete")
 .overlay(v-if="isSidebarVisible" @click="toggleSidebar")
 </template>
 
@@ -55,6 +56,7 @@ const addTodoItem = () => {
   })
   selectedTodoId.value = newId
 }
+
 const sidebarRef = ref<HTMLElement | null>(null)
 const isFetching = ref(false)
 const toggleSidebar = () => {
@@ -76,27 +78,11 @@ const toggleRandomImage = async () => {
 const todoList = ref<TodoItem[]>([
   {
     id: 1,
-    title: 'Todo 1',
-    startDate: '2021-01-01',
-    endDate: '2021-01-02',
-    imageUrl: 'https://via.placeholder.com/150',
-    content: 'Todo 1 Content'
-  },
-  {
-    id: 2,
-    title: 'Todo 2',
-    startDate: '2021-01-01',
-    endDate: '2021-01-02',
-    imageUrl: 'https://via.placeholder.com/150',
-    content: 'Todo 2 Content'
-  },
-  {
-    id: 3,
-    title: 'Todo 3',
-    startDate: '2021-01-01',
-    endDate: '2021-01-02',
-    imageUrl: 'https://via.placeholder.com/150',
-    content: 'Todo 3 Content'
+    title: 'First Todo',
+    startDate: '',
+    endDate: '',
+    imageUrl: '',
+    content: 'This is the first todo item.'
   }
 ])
 const handleUpdate = (updatedData: Partial<TodoItem>) => {
@@ -105,10 +91,24 @@ const handleUpdate = (updatedData: Partial<TodoItem>) => {
     todoList.value[index] = { ...todoList.value[index], ...updatedData }
   }
 }
+const handleDelete = (id: number) => {
+  const index = todoList.value.findIndex((todo) => todo.id === id)
+  if (index !== -1) {
+    todoList.value.splice(index, 1)
+    if (todoList.value.length === 0) {
+      selectedTodoId.value = null
+      return
+    }
+    if (selectedTodoId.value === id) {
+      selectedTodoId.value = todoList.value[0].id
+    }
+  }
+}
+
 onMounted(async () => {
   const data = await getRandomImage()
   randomImageUrl.value = data[0].url
-  selectedTodoId.value = todoList.value[0].id
+  if (todoList.value.length > 0) selectedTodoId.value = todoList.value[0].id
 })
 </script>
 
@@ -148,20 +148,21 @@ onMounted(async () => {
     width: 100%
     height: 48px
     margin-bottom: 5px
-  &__sidebar--list--item--selected
-    font-weight: bold
-    position: relative
-    &::after
-      content: ""
-      position: absolute
-      right: 0px
-      top: 50%
-      transform: translateY(-50%)
-      width: 0
-      height: 0
-      border-top: 24px solid transparent
-      border-bottom: 24px solid transparent
-      border-right: 24px solid #fff
+    cursor: pointer
+    &--selected
+      font-weight: bold
+      position: relative
+      &::after
+        content: ""
+        position: absolute
+        right: 0px
+        top: 50%
+        transform: translateY(-50%)
+        width: 0
+        height: 0
+        border-top: 24px solid transparent
+        border-bottom: 24px solid transparent
+        border-right: 24px solid #fff
   &__sidebar--add
     margin-top: 20px
     button
@@ -169,7 +170,6 @@ onMounted(async () => {
       width: 210px
       height: 44px
       background-color: #E7FFE9
-      border-radius: 10px
       font-size: 20px
       cursor: pointer
       transition: background-color 0.3s ease
@@ -180,14 +180,8 @@ onMounted(async () => {
     height: 60px
     margin: 20px auto
     background: $gray-color
-    border-radius: 10px
     img
-      width: 100%
-      height: 100%
-      object-fit: cover
-      border-radius: 10px
       object-position: center
-      display: block
 .hambuger__icon
   position: absolute
   top: 20px
