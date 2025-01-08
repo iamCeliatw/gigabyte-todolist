@@ -113,7 +113,7 @@ onMounted(async () => {
 </script>
 
 <style lang="sass" scoped>
-@import '../assets/variable'
+@use '../assets/variable' as var
 .todo
   &__wrapper
     overflow: hidden
@@ -121,7 +121,7 @@ onMounted(async () => {
   &__sidebar
     width: 250px
     height: 100vh
-    background-color: $primary-color
+    background-color: var.$primary-color
     position: fixed
     top: 0
     left: 0
@@ -139,11 +139,11 @@ onMounted(async () => {
     h1
       width: 100%
       padding: 20px
-      color: $text-color
+      color: var.$text-color
       font-size: 20px
       font-weight: normal
   &__sidebar--list--item
-    background: $secondary-color
+    background: var.$secondary-color
     padding: 10px 20px
     width: 100%
     height: 48px
@@ -174,12 +174,12 @@ onMounted(async () => {
       cursor: pointer
       transition: background-color 0.3s ease
       &:hover
-        background-color: $secondary-color
+        background-color: var.$secondary-color
   &__sidebar--downer
     width: 210px
     height: 60px
     margin: 20px auto
-    background: $gray-color
+    background: var.$gray-color
     img
       object-position: center
 .hambuger__icon
@@ -193,7 +193,7 @@ onMounted(async () => {
   span
     width: 30px
     height: 3px
-    background-color: $text-color
+    background-color: var.$text-color
     display: block
     margin-bottom: 5px
     &:last-child
@@ -207,6 +207,6 @@ onMounted(async () => {
   left: 0
   width: 100%
   height: 100%
-  background: $overlay-color
+  background: var.$overlay-color
   z-index: 1
 </style>
