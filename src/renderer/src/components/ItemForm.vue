@@ -114,7 +114,7 @@ const createFieldWatch = (field: keyof TodoItem) => {
         }
         contentCount.value = newVal.length
       }
-      if (field === 'inputUrl') {
+      if (field === 'inputUrl' && typeof newVal === 'string') {
         localFormData.value.imageUrl = newVal
       }
       if (props.item && newVal !== props.item[field]) {
