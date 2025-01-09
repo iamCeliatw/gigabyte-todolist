@@ -52,6 +52,7 @@ const addTodoItem = () => {
     startDate: '',
     endDate: '',
     imageUrl: '',
+    inputUrl: '',
     content: ''
   })
   selectedTodoId.value = newId
@@ -82,6 +83,7 @@ const todoList = ref<TodoItem[]>([
     startDate: '',
     endDate: '',
     imageUrl: '',
+    inputUrl: '',
     content: 'This is the first todo item.'
   }
 ])
