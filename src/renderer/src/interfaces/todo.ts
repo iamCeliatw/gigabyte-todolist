@@ -5,4 +5,5 @@ export interface TodoItem {
   endDate?: string
   imageUrl?: string
   content?: string
+  inputUrl?: string
 }

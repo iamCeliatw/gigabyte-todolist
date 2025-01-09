@@ -16,9 +16,9 @@
     label.form-label.image {{ "Image" }}
     .image__container
       .image-upload-box
-        button.upload-btn(type="button" @click="handleFileClick") {{ "Upload Image" }}
+        button.upload-btn(type="button" @click="fileInputRef?.click()") {{ "Upload Image" }}
         p.or {{ "or" }}
-        input.url-input(type="text" v-model="inputUrl" placeholder="Please enter image URL")
+        input.url-input(type="text" v-model="localFormData.inputUrl" placeholder="Please enter image URL")
         input.file-input(type="file" ref="fileInputRef" accept="image/*" style="display: none" @change="onFileChange")
 
       .image-preview
@@ -44,9 +44,12 @@
 import type { TodoItem } from '@renderer/interfaces/todo'
 import { ref, watch } from 'vue'
 import Swal from 'sweetalert2'
+type TodoItemUpdate = Partial<
+  Pick<TodoItem, 'id' | 'title' | 'content' | 'startDate' | 'endDate' | 'imageUrl'>
+>
 const props = defineProps<{ item: TodoItem | null }>()
 const emits = defineEmits<{
-  (e: 'updateItem', updatedData: Partial<TodoItem>): void
+  (e: 'updateItem', updatedData: TodoItemUpdate): void
   (e: 'deleteItem', id: number): void
 }>()
 
@@ -60,9 +63,17 @@ const localFormData = ref<TodoItem>({
   startDate: '',
   endDate: '',
   imageUrl: '',
-  content: ''
+  content: '',
+  inputUrl: ''
 })
-const fieldsToWatch: (keyof TodoItem)[] = ['title', 'content', 'startDate', 'endDate', 'imageUrl']
+const fieldsToWatch: (keyof TodoItem)[] = [
+  'title',
+  'content',
+  'startDate',
+  'endDate',
+  'imageUrl',
+  'inputUrl'
+]
 
 const deleteItem = () => {
   Swal.fire({
@@ -84,17 +95,12 @@ const deleteItem = () => {
   })
 }
 
-watch(inputUrl, (newVal) => {
-  if (!newVal) return
-  localFormData.value.imageUrl = newVal
-})
-
-// watch input change function
 const createFieldWatch = (field: keyof TodoItem) => {
   watch(
     () => localFormData.value[field],
     (newVal) => {
       if (field === 'startDate' || field === 'endDate') {
+        console.log('checking')
         if (!isChecking.value) checkField(field)
       }
       if (field === 'content' && typeof newVal === 'string') {
@@ -108,6 +114,9 @@ const createFieldWatch = (field: keyof TodoItem) => {
         }
         contentCount.value = newVal.length
       }
+      if (field === 'inputUrl') {
+        localFormData.value.imageUrl = newVal
+      }
       if (props.item && newVal !== props.item[field]) {
         emits('updateItem', {
           id: props.item.id,
@@ -117,11 +126,8 @@ const createFieldWatch = (field: keyof TodoItem) => {
     }
   )
 }
-fieldsToWatch.forEach(createFieldWatch)
 
-const handleFileClick = () => {
-  fileInputRef.value?.click()
-}
+fieldsToWatch.forEach(createFieldWatch)
 
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -149,6 +155,7 @@ const checkField = (field: keyof TodoItem) => {
       case 'startDate':
         if (localFormData.value.startDate && localFormData.value.endDate) {
           if (localFormData.value.startDate > localFormData.value.endDate) {
+            console.log('situation 1')
             Swal.fire({
               toast: true,
               position: 'center',
@@ -160,6 +167,7 @@ const checkField = (field: keyof TodoItem) => {
               title: 'Oops...Input Error',
               text: 'start date should be less than end date'
             })
+            localFormData.value.startDate = localFormData.value.endDate
             return
           }
         }
@@ -167,6 +175,7 @@ const checkField = (field: keyof TodoItem) => {
       case 'endDate':
         if (localFormData.value.startDate && localFormData.value.endDate) {
           if (localFormData.value.endDate < localFormData.value.startDate) {
+            console.log('situation 2')
             Swal.fire({
               toast: true,
               position: 'center',
@@ -178,6 +187,7 @@ const checkField = (field: keyof TodoItem) => {
               title: 'Oops...Input Error',
               text: 'End date should be greater than start date'
             })
+            localFormData.value.endDate = localFormData.value.startDate
             return
           }
         }
@@ -188,12 +198,6 @@ const checkField = (field: keyof TodoItem) => {
   }
 }
 const handleImageError = (event: Event) => {
-  Swal.fire({
-    icon: 'error',
-    title: 'Invalid URL',
-    text: 'Please enter a valid image URL.'
-  })
-  inputUrl.value = ''
   const target = event.target as HTMLImageElement
   target.src =
     'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGNkZzdpajhleTI0YzRtNGFhYmY5d2IxZWV4eXRtc3h1eDl4NmhrayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TqiwHbFBaZ4ti/giphy.webp'
@@ -246,8 +250,8 @@ watch(
     width: 100%
   .image
     padding-left: 1rem
-    @media screen and (max-width: 768px)
-      padding: 0
+  //   @media screen and (max-width: 768px)
+  //     padding: 0
 
 
   .left-column,
@@ -334,6 +338,7 @@ watch(
       border-radius: 10px
       object-position: center
       width: calc(100% - 1rem)
+      padding-left: 0
       @media (max-width: 768px)
         width: 100%
     .no-img
