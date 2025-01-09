@@ -144,13 +144,19 @@ onMounted(async () => {
       color: var.$text-color
       font-size: 20px
       font-weight: normal
+    ul
+      width: 100%
   &__sidebar--list--item
     background: var.$secondary-color
-    padding: 10px 20px
+    padding: 10px 25px
     width: 100%
     height: 48px
     margin-bottom: 5px
     cursor: pointer
+    word-break: break-all
+    overflow: hidden
+    white-space: nowrap
+    text-overflow: ellipsis
     &--selected
       font-weight: bold
       position: relative
